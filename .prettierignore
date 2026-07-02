@@ -1,0 +1,9 @@
+# authored spec/instruction docs, not tool source
+docs/
+CLAUDE.md
+
+dist/
+coverage/
+templates/
+demo/
+pnpm-lock.yaml
