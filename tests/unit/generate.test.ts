@@ -51,6 +51,7 @@ describe("shouldSubstitute", () => {
     expect(shouldSubstitute("README.md", SUBSTITUTION_EXTENSIONS)).toBe(true);
     expect(shouldSubstitute(".env.example", SUBSTITUTION_EXTENSIONS)).toBe(true);
     expect(shouldSubstitute("ci.yml", SUBSTITUTION_EXTENSIONS)).toBe(true);
+    expect(shouldSubstitute("LICENSE", SUBSTITUTION_EXTENSIONS)).toBe(true);
   });
 
   it("rejects lockfiles and binaries", () => {
