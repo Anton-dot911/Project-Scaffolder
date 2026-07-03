@@ -16,7 +16,9 @@ export interface GenerateOptions {
 export const PROJECT_NAME_PATTERN = /^[a-z][a-z0-9-]{1,40}$/;
 
 // Files whose contents go through {{var}} substitution; everything else is
-// copied verbatim (lockfiles, binaries).
+// copied verbatim (lockfiles, binaries). Matching is by filename suffix, so
+// extensionless names like "LICENSE" (MIT text carries {{year}} {{author}})
+// can be listed alongside real extensions.
 export const SUBSTITUTION_EXTENSIONS: string[] = [
   ".ts",
   ".tsx",
@@ -27,6 +29,7 @@ export const SUBSTITUTION_EXTENSIONS: string[] = [
   ".toml",
   ".html",
   ".env.example",
+  "LICENSE",
 ];
 
 export const TEMPLATES: TemplateDef[] = [
