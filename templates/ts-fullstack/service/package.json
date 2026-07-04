@@ -1,0 +1,25 @@
+{
+  "name": "@{{project_name}}/service",
+  "version": "0.1.0",
+  "description": "Fastify API for {{project_name}}",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env --watch src/index.ts",
+    "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/index.ts",
+    "test": "vitest run",
+    "test:llm-smoke": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --config vitest.llm.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
+    "@{{project_name}}/shared": "workspace:*",
+    "fastify": "^5.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

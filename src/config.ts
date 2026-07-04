@@ -39,7 +39,11 @@ export const TEMPLATES: TemplateDef[] = [
       "React + Vite + TS + Tailwind web/, Fastify service/, shared/ types (pnpm workspace)",
     dir: "templates/ts-fullstack",
     substitutionExtensions: SUBSTITUTION_EXTENSIONS,
-    postGenNotes: ["pnpm install", "pnpm dev"],
+    postGenNotes: [
+      "pnpm install",
+      "cp service/.env.example service/.env   # add ANTHROPIC_API_KEY for the llm layer",
+      "pnpm dev",
+    ],
   },
   {
     name: "py-service",
