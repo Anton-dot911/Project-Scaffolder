@@ -32,6 +32,13 @@ export const SUBSTITUTION_EXTENSIONS: string[] = [
   "LICENSE",
 ];
 
+// npm unconditionally strips .gitignore files when packing a package, so a
+// template shipped via `npx github:...` would lose them. Templates therefore
+// store such files under a neutral name and the copy step renames them back.
+export const COPY_RENAMES: Record<string, string> = {
+  _gitignore: ".gitignore",
+};
+
 export const TEMPLATES: TemplateDef[] = [
   {
     name: "ts-fullstack",

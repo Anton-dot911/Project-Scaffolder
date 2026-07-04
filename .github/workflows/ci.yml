@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  # Release gate (CLAUDE.md rule 3): each template is generated into a tmp
+  # dir, its dependencies installed, and its own lint/typecheck/test run.
+  e2e:
+    runs-on: ubuntu-latest
+    needs: checks
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [ts-cli, py-service, ts-fullstack]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      # uv is only exercised by the py-service e2e; setting it up on the
+      # other legs would leave enable-cache with no cache dir to save,
+      # which fails the post-job step. Gate it to the leg that uses it.
+      - uses: astral-sh/setup-uv@v6
+        if: matrix.template == 'py-service'
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: pnpm install --frozen-lockfile
+      # Generated projects install into the same pnpm store, so the pnpm
+      # cache above also covers the e2e installs.
+      - run: pnpm vitest run --config vitest.e2e.config.ts tests/e2e/${{ matrix.template }}.test.ts

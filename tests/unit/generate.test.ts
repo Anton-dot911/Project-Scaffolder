@@ -100,6 +100,7 @@ describe("generate", () => {
       'export const name = "{{project_name}}";\n',
     );
     writeFileSync(path.join(templateDir, "notes.txt"), "verbatim {{project_name}}\n");
+    writeFileSync(path.join(templateDir, "_gitignore"), "node_modules/\n");
     writeFileSync(path.join(templateDir, "pnpm-lock.yaml"), "name: {{project_name}}\n");
     writeFileSync(path.join(templateDir, "logo.png"), binaryContent);
 
@@ -164,6 +165,14 @@ describe("generate", () => {
       }
     };
     scan(targetDir);
+  });
+
+  // npm strips .gitignore files when packing, so templates ship them as
+  // _gitignore and the copy step must restore the real name.
+  it("renames _gitignore to .gitignore on copy", () => {
+    run(false);
+    expect(existsSync(path.join(targetDir, "_gitignore"))).toBe(false);
+    expect(readFileSync(path.join(targetDir, ".gitignore"), "utf8")).toBe("node_modules/\n");
   });
 
   it("does not create a git repo when git is false", () => {
