@@ -35,9 +35,11 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      # uv is only exercised by the py-service e2e, but setting it up
-      # unconditionally keeps the matrix uniform and it is fast when cached.
+      # uv is only exercised by the py-service e2e; setting it up on the
+      # other legs would leave enable-cache with no cache dir to save,
+      # which fails the post-job step. Gate it to the leg that uses it.
       - uses: astral-sh/setup-uv@v6
+        if: matrix.template == 'py-service'
         with:
           python-version: "3.13"
           enable-cache: true
