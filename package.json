@@ -23,6 +23,7 @@
   "scripts": {
     "dev": "node --disable-warning=ExperimentalWarning src/cli.ts",
     "build": "tsup",
+    "prepare": "tsup",
     "test": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "lint": "eslint . && prettier --check .",

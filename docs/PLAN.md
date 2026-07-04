@@ -2,6 +2,16 @@
 
 One task = one session. Minimal version (T1–T4) targets 1 day; T5–T7 complete the tool.
 
+## Status
+
+- [x] T1. CLI skeleton
+- [x] T2. Generator core
+- [x] T3. Template: ts-cli
+- [x] T4. Template: py-service
+- [x] T5. Template: ts-fullstack
+- [x] T6. E2E hardening + distribution
+- [ ] T7. Acceptance in the wild
+
 ---
 
 ## Contracts

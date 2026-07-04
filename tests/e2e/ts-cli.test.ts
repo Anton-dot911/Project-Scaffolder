@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -61,6 +61,11 @@ describe("ts-cli template e2e", () => {
       }
     };
     scan(projectDir);
+  });
+
+  it("ships a real .gitignore (renamed from the template's _gitignore)", () => {
+    expect(existsSync(path.join(projectDir, "_gitignore"))).toBe(false);
+    expect(readFileSync(path.join(projectDir, ".gitignore"), "utf8")).toContain("node_modules/");
   });
 
   it("installs dependencies", () => {

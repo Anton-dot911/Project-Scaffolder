@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { PROJECT_NAME_PATTERN, type GenerateOptions } from "./config.ts";
+import { COPY_RENAMES, PROJECT_NAME_PATTERN, type GenerateOptions } from "./config.ts";
 
 // Template dirs in config.ts are relative to the package root (works both for
 // src/cli.ts dev runs and the dist/ build, which sit one level below root).
@@ -87,12 +87,13 @@ function copyTree(
 ): void {
   for (const entry of readdirSync(srcDir, { withFileTypes: true })) {
     const srcPath = path.join(srcDir, entry.name);
-    const destPath = path.join(destDir, entry.name);
+    const destName = COPY_RENAMES[entry.name] ?? entry.name;
+    const destPath = path.join(destDir, destName);
     if (entry.isDirectory()) {
       mkdirSync(destPath);
       copyTree(srcPath, destPath, extensions, placeholders);
     } else if (entry.isFile()) {
-      if (shouldSubstitute(entry.name, extensions)) {
+      if (shouldSubstitute(destName, extensions)) {
         const content = substitute(readFileSync(srcPath, "utf8"), placeholders);
         writeFileSync(destPath, content, { mode: statSync(srcPath).mode });
       } else {
