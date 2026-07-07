@@ -27,7 +27,7 @@ shared/
 service/
   src/app.ts      # Fastify app factory (/health)
   src/index.ts    # listen entry point
-  src/llm/        # client.ts (createLlm/structured), meter.ts (no-op Meter stub)
+  src/llm/        # client.ts (createLlm/structured); calls recorded to Meter (Supabase llm_calls)
   prompts/        # versioned prompt files (<name>.v<N>.md)
 web/
   src/            # React app (App.tsx, lib/api.ts fetches via Vite proxy)

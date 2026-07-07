@@ -10,8 +10,8 @@ import path from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
+import { meteredClient } from "meter-ts";
 import { z } from "zod";
-import { Meter } from "./meter.ts";
 
 // Fallback chain mirrors the contract: explicit arg > LLM_MODEL env > default.
 const DEFAULT_MODEL = "claude-sonnet-4-6";
@@ -42,10 +42,14 @@ export interface Llm {
 }
 
 export function createLlm(opts: { project: string; component: string }): Llm {
-  const meter = new Meter();
   // SDK-internal retries are disabled so the explicit backoff below is the
-  // single retry mechanism. Reads ANTHROPIC_API_KEY from the env.
-  const client = new Anthropic({ timeout: REQUEST_TIMEOUT_MS, maxRetries: 0 });
+  // single retry mechanism. Reads ANTHROPIC_API_KEY from the env. meteredClient
+  // wraps the SDK so every messages.create is recorded to Meter (Supabase
+  // llm_calls) with cost/latency/tokens; it only observes the response.
+  const client = meteredClient(new Anthropic({ timeout: REQUEST_TIMEOUT_MS, maxRetries: 0 }), {
+    project: opts.project,
+    component: opts.component,
+  });
 
   async function callWithBackoff(
     model: string,
@@ -55,10 +59,9 @@ export function createLlm(opts: { project: string; component: string }): Llm {
     tool: Anthropic.Tool,
   ): Promise<Anthropic.Message> {
     for (let attempt = 0; ; attempt += 1) {
-      const started = performance.now();
-      let response: Anthropic.Message;
       try {
-        response = await client.messages.create({
+        // Recorded to Meter automatically by the meteredClient wrapper.
+        return await client.messages.create({
           model,
           max_tokens: MAX_OUTPUT_TOKENS,
           temperature,
@@ -74,18 +77,7 @@ export function createLlm(opts: { project: string; component: string }): Llm {
           attempt < BACKOFF_MS.length;
         if (!retryable) throw error;
         await sleep(BACKOFF_MS[attempt]);
-        continue;
       }
-      meter.record({
-        project: opts.project,
-        component: opts.component,
-        model,
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-        latencyMs: performance.now() - started,
-        success: true,
-      });
-      return response;
     }
   }
 

@@ -15,9 +15,8 @@ from typing import Any
 
 import anthropic
 from anthropic.types import MessageParam, ToolParam, ToolUseBlock
+from meter import metered_client
 from pydantic import BaseModel, ValidationError
-
-from app.llm.meter import Meter
 
 # Fallback chain mirrors the TS contract: explicit arg > LLM_MODEL env > default.
 DEFAULT_MODEL = "claude-sonnet-4-6"
@@ -38,12 +37,17 @@ class LlmError(Exception):
 
 class Llm:
     def __init__(self, project: str, component: str) -> None:
-        self._project = project
-        self._component = component
-        self._meter = Meter()
         # SDK-internal retries are disabled so the explicit backoff below is
         # the single retry mechanism. Reads ANTHROPIC_API_KEY from the env.
-        self._client = anthropic.Anthropic(timeout=REQUEST_TIMEOUT_SECONDS, max_retries=0)
+        # metered_client wraps the SDK so every messages.create is recorded to
+        # Meter (Supabase llm_calls) with cost/latency/tokens; it only observes
+        # and never alters the response. The wrapper's return type is dynamic,
+        # so annotate as the SDK client to keep static typing precise.
+        self._client: anthropic.Anthropic = metered_client(
+            anthropic.Anthropic(timeout=REQUEST_TIMEOUT_SECONDS, max_retries=0),
+            project=project,
+            component=component,
+        )
 
     def structured(
         self,
@@ -119,8 +123,8 @@ class Llm:
         tool: ToolParam,
     ) -> anthropic.types.Message:
         for attempt in range(len(BACKOFF_SECONDS) + 1):
-            started = time.monotonic()
             try:
+                # Recorded to Meter automatically by the metered_client wrapper.
                 response = self._client.messages.create(
                     model=model,
                     max_tokens=MAX_OUTPUT_TOKENS,
@@ -135,15 +139,6 @@ class Llm:
                     raise
                 time.sleep(BACKOFF_SECONDS[attempt])
                 continue
-            self._meter.record(
-                project=self._project,
-                component=self._component,
-                model=model,
-                input_tokens=response.usage.input_tokens,
-                output_tokens=response.usage.output_tokens,
-                latency_ms=(time.monotonic() - started) * 1000,
-                success=True,
-            )
             return response
         raise AssertionError("unreachable: backoff loop always returns or raises")
 
