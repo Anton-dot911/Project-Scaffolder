@@ -15,6 +15,7 @@
     "@anthropic-ai/sdk": "^0.110.0",
     "@{{project_name}}/shared": "workspace:*",
     "fastify": "^5.9.0",
+    "meter-ts": "github:anton-dot911/meter#path:/packages/meter-ts",
     "zod": "^4.4.3"
   },
   "devDependencies": {

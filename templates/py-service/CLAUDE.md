@@ -23,7 +23,7 @@ TODO: one paragraph on what {{project_name}} does and for whom.
 ```
 app/
   main.py       # FastAPI entry point (/health)
-  llm/          # client.py (create_llm/structured), meter.py (no-op Meter stub)
+  llm/          # client.py (create_llm/structured); calls recorded to Meter (Supabase llm_calls)
 prompts/        # versioned prompt files (<name>.v<N>.md)
 tests/          # pytest
 ```
